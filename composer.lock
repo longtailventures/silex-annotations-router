@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "88d04cbdb297fb62456258d453359f89",
-    "content-hash": "3884781d4f0d0fe58fec0f4a0f224b11",
+    "hash": "776a1bd349af8853d28e907d1d399896",
+    "content-hash": "d035c1e001b52986b367b8118c48297a",
     "packages": [
         {
             "name": "longtailventures/string-utilities",
@@ -34,7 +34,7 @@
     ],
     "packages-dev": [],
     "aliases": [],
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "stability-flags": {
         "longtailventures/string-utilities": 20
     },

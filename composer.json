@@ -1,4 +1,22 @@
 {
+    "name": "longtailventures/silex-annotations-router",
+    "description": "Simple silex router generator from annotations",
+    "type": "library",
+    "homepage": "https://longtailpartners.com/",
+    "authors" : [
+        {
+            "name": "Melvyn Navasca",
+            "email": "mnavasca@longtailpartners.com",
+            "role": "Senior Software Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "LongTailVentures\\SilexAnnotationsRouter\\": "src"
+
+        }
+    },
+    "minimum-stability" : "dev",
     "repositories": [
         {
             "url": "https://github.com/longtailventures/string-utilities.git",
