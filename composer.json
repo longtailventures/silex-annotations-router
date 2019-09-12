@@ -1,0 +1,11 @@
+{
+    "repositories": [
+        {
+            "url": "https://github.com/longtailventures/string-utilities.git",
+            "type": "git"
+        }
+    ],
+    "require": {
+        "longtailventures/string-utilities" : "dev-master"
+    }
+}

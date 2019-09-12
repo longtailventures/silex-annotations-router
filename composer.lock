@@ -1,0 +1,45 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "This file is @generated automatically"
+    ],
+    "hash": "88d04cbdb297fb62456258d453359f89",
+    "content-hash": "3884781d4f0d0fe58fec0f4a0f224b11",
+    "packages": [
+        {
+            "name": "longtailventures/string-utilities",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/longtailventures/string-utilities.git",
+                "reference": "3a86309f9bf9993248b6ef09b984bafe8614867d"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "LongTailVentures\\": "src"
+                }
+            },
+            "authors": [
+                {
+                    "name": "Melvyn Navasca",
+                    "email": "mnavasca@lotlinx.com",
+                    "role": "Developer"
+                }
+            ],
+            "homepage": "http://longtailpartners.com/",
+            "time": "2018-02-22 23:30:53"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {
+        "longtailventures/string-utilities": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
