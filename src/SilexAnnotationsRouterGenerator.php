@@ -229,8 +229,6 @@ class SilexAnnotationsRouterGenerator
 
     private function _generateRouterFileContentsFromData(array $routerData)
     {
-        $routerFileContents = '';
-
         define('COMMENT_BREAK', "// ----------------------------------------------------------------------------");
         
         $routerFileContents = "<?php" . PHP_EOL . PHP_EOL;
