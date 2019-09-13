@@ -121,7 +121,7 @@ class SilexAnnotationsRouterGenerator
                     $isRoutingEntry = false;
                     $isAclEntry = false;
 
-                    $routerData['__CONTROLLERS']['actions'][$methodName] = [
+                    $routerData['__CONTROLLERS'][$controllerRoutingName]['actions'][$methodName] = [
                         'routes' => [],
                         'acl' => []
                     ];
@@ -160,7 +160,7 @@ class SilexAnnotationsRouterGenerator
                             {
                                 list($label, $url) = explode('=', $line);
                                 $routingEntry['url'] = $url;
-                                $routerData['__URLS'] = "$controllerRoutingName";
+                                $routerData['__URLS'][$url] = "$controllerRoutingName";
                                 continue;
                             }
 
@@ -185,7 +185,7 @@ class SilexAnnotationsRouterGenerator
 
                             if ($line === ')')
                             {
-                                $routerData['__CONTROLLERS']['actions'][$methodName]['routes'][] = $routingEntry;
+                                $routerData['__CONTROLLERS'][$controllerRoutingName]['actions'][$methodName]['routes'][] = $routingEntry;
                                 $isRoutingEntry = false;
                                 $routingEntry = null;
                                 continue;
@@ -206,12 +206,12 @@ class SilexAnnotationsRouterGenerator
                                 continue;
                             }
 
-                            $routerData['__CONTROLLERS']['actions'][$methodName]['acl'][] = $line;
+                            $routerData['__CONTROLLERS'][$controllerRoutingName]['actions'][$methodName]['acl'][] = $line;
                         }
                     }
                 }
 
-                uasort($routerData['__CONTROLLERS']['actions'], function ($actionA, $actionB) {
+                uasort($routerData['__CONTROLLERS'][$controllerRoutingName]['actions'], function ($actionA, $actionB) {
                     return strcasecmp(
                             max(array_column($actionA['routes'], 'url')),
                             max(array_column($actionB['routes'], 'url'))
@@ -229,10 +229,11 @@ class SilexAnnotationsRouterGenerator
 
     private function _generateRouterFileContentsFromData(array $routerData)
     {
-        define('COMMENT_BREAK', "// ----------------------------------------------------------------------------");
-        
-        $routerFileContents = "<?php" . PHP_EOL . PHP_EOL;
+        $routerFileContents = '';
 
+        define('COMMENT_BREAK', "// ----------------------------------------------------------------------------");
+
+        $routerFileContents = "<?php" . PHP_EOL . PHP_EOL;
         foreach ($routerData['__URLS'] as $url => $controllerName)
         {
             $controllerToProcess = $routerData['__CONTROLLERS'][$controllerName];
@@ -247,13 +248,13 @@ class SilexAnnotationsRouterGenerator
 
             $routerFileContents .= PHP_EOL;
 
-            foreach ($controllerToProcess['actions'] as $action => $routerData)
+            foreach ($controllerToProcess['actions'] as $action => $actionData)
             {
                 $routerFileContents .= COMMENT_BREAK. PHP_EOL;
                 $routerFileContents .= "\$action = \"\$controller:$action\";" . PHP_EOL;
 
                 $routingEntries = [];
-                foreach ($routerData['routes'] as $i => $routerDatum)
+                foreach ($actionData['routes'] as $i => $routerDatum)
                 {
                     $routingEntries[$i] = '';
                     $routingEntries[$i] .= "\$app->{$routerDatum['method']}(" . PHP_EOL;
@@ -275,12 +276,12 @@ class SilexAnnotationsRouterGenerator
 
                 $routerFileContents .= implode(PHP_EOL, $routingEntries);
 
-                if (count($routerData['acl']) > 0)
+                if (count($actionData['acl']) > 0)
                 {
                     $routerFileContents .= PHP_EOL;
 
                     $aclEntries = [];
-                    foreach ($routerData['acl'] as $aclEntry)
+                    foreach ($actionData['acl'] as $aclEntry)
                         $aclEntries[] = "        " . $aclEntry;
 
                     $routerFileContents .= "\$app['acl']->addResource(\$action);" . PHP_EOL;
