@@ -109,7 +109,7 @@ class SilexAnnotationsRouterGenerator
 
                 foreach ($methods as $method)
                 {
-                    if ($method->isStatic())
+                    if ($method->isStatic() || $method->isConstructor())
                         continue;
 
                     $methodName = $method->getName();
