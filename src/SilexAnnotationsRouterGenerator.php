@@ -11,20 +11,42 @@ use ReflectionMethod;
 
 class SilexAnnotationsRouterGenerator
 {
-    private $_controllersToProcess;
+    /**
+     * Generates a router file (indicated by $routerFile) for $controllerFile
+     *
+     * @param string $controllerFile
+     * The name of the controller file to generate a router file for
+     *
+     * @param string $routerFile
+     * Indicates which file to write router file contents to
+     *
+     * @return bool $isRouterFileCreated
+     */
+    public function generateRouterFileForControllerFile($controllerFile, $routerFile) : bool
+    {
+        $routerData = $this->_parseRouterDataFromControllers([$controllerFile]);
+        $routerFileContents = $this->_generateRouterFileContentsFromData($routerData);
+
+        return file_put_contents($routerFile, $routerFileContents) !== false;
+    }
+
 
     /**
-     * SilexAnnotationsRouterGenerator constructor.
+     * Generates a router file (indicated by $routerFile) for a directory of controllers ($controllerDir)
      *
      * @param string $controllerDir
-     * Indicates which directory to read controller classes from
+     * The name of the directdory of controllers to generate a router file for
+     *
+     * @param string $routerFile
+     * Indicates which file to write router file contents to
+     *
+     * @return bool $isRouterFileCreated
      */
-    public function __construct($controllerDir)
+    public function generateRouterFileForControllerDirectory($controllerDir, $routerFile) : bool
     {
+        $controllersToProcess = [];
+
         $directories = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($controllerDir));
-
-        $this->_controllersToProcess = [];
-
         foreach ($directories as $file)
         {
             if ($file->isDir())
@@ -33,34 +55,24 @@ class SilexAnnotationsRouterGenerator
             if (!LongTailVentures\StringUtils::endsWith($file->getPathname(), 'Controller.php'))
                 continue;
 
-            $this->_controllersToProcess[] = $file->getPathname();
+            $controllersToProcess[] = $file->getPathname();
         }
-    }
 
-
-    /**
-     * Generates a router file indicated by $routerFile
-     *
-     * @param string $routerFile
-     * Indicates which file to write router file contents to
-     */
-    public function generateRouterFileContentsToFile($routerFile)
-    {
-        $routerData = $this->_parseRouterDataFromControllers();
+        $routerData = $this->_parseRouterDataFromControllers($controllersToProcess);
         $routerFileContents = $this->_generateRouterFileContentsFromData($routerData);
 
-        file_put_contents($routerFile, $routerFileContents);
+        return file_put_contents($routerFile, $routerFileContents) !== false;
     }
 
 
-    private function _parseRouterDataFromControllers()
+    private function _parseRouterDataFromControllers(array $controllersToProcess)
     {
         $routerData = [
             '__CONTROLLERS' => [],
             '__URLS' => []
         ];
 
-        foreach ($this->_controllersToProcess as $controllerFile)
+        foreach ($controllersToProcess as $controllerFile)
         {
             $fileContents = file_get_contents($controllerFile);
 
@@ -229,17 +241,15 @@ class SilexAnnotationsRouterGenerator
 
     private function _generateRouterFileContentsFromData(array $routerData)
     {
-        $routerFileContents = '';
-
-        define('COMMENT_BREAK', "// ----------------------------------------------------------------------------");
+        $commentBreak = "// ----------------------------------------------------------------------------";
 
         $routerFileContents = "<?php" . PHP_EOL . PHP_EOL;
         foreach ($routerData['__URLS'] as $url => $controllerName)
         {
             $controllerToProcess = $routerData['__CONTROLLERS'][$controllerName];
 
-            $routerFileContents .= COMMENT_BREAK . PHP_EOL;
-            $routerFileContents .= COMMENT_BREAK . PHP_EOL;
+            $routerFileContents .= $commentBreak . PHP_EOL;
+            $routerFileContents .= $commentBreak . PHP_EOL;
 
             $routerFileContents .= "\$controller = '$controllerName';" . PHP_EOL;
             $routerFileContents .= "\$app[\$controller] = function() use (\$app) {" . PHP_EOL;
@@ -250,7 +260,7 @@ class SilexAnnotationsRouterGenerator
 
             foreach ($controllerToProcess['actions'] as $action => $actionData)
             {
-                $routerFileContents .= COMMENT_BREAK. PHP_EOL;
+                $routerFileContents .= $commentBreak. PHP_EOL;
                 $routerFileContents .= "\$action = \"\$controller:$action\";" . PHP_EOL;
 
                 $routingEntries = [];
@@ -294,7 +304,7 @@ class SilexAnnotationsRouterGenerator
                     $routerFileContents .= ");" . PHP_EOL;
                 }
 
-                $routerFileContents .= COMMENT_BREAK . PHP_EOL;
+                $routerFileContents .= $commentBreak . PHP_EOL;
                 $routerFileContents .= PHP_EOL;
             }
 
