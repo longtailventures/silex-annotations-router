@@ -12,6 +12,26 @@ use ReflectionMethod;
 class SilexAnnotationsRouterGenerator
 {
     /**
+     * Generates a router file (indicated by $routerFile) for $controllerFiles
+     *
+     * @param array $controllerFiles
+     * Numerical indexed array. Indicateds which controller files (specified by name) to generate a router file for
+     *
+     * @param string $routerFile
+     * Indicates which file to write router file contents to
+     *
+     * @return bool $isRouterFileCreated
+     */
+    public function generateRouterFileForControllerFiles(array $controllerFiles, $routerFile) : bool
+    {
+        $routerData = $this->_parseRouterDataFromControllers($controllerFiles);
+        $routerFileContents = $this->_generateRouterFileContentsFromData($routerData);
+
+        return file_put_contents($routerFile, $routerFileContents) !== false;
+    }
+
+
+    /**
      * Generates a router file (indicated by $routerFile) for $controllerFile
      *
      * @param string $controllerFile
@@ -24,10 +44,7 @@ class SilexAnnotationsRouterGenerator
      */
     public function generateRouterFileForControllerFile($controllerFile, $routerFile) : bool
     {
-        $routerData = $this->_parseRouterDataFromControllers([$controllerFile]);
-        $routerFileContents = $this->_generateRouterFileContentsFromData($routerData);
-
-        return file_put_contents($routerFile, $routerFileContents) !== false;
+        return $this->generateRouterFileForControllerFiles([$controllerFile], $routerFile);
     }
 
 
@@ -58,10 +75,7 @@ class SilexAnnotationsRouterGenerator
             $controllersToProcess[] = $file->getPathname();
         }
 
-        $routerData = $this->_parseRouterDataFromControllers($controllersToProcess);
-        $routerFileContents = $this->_generateRouterFileContentsFromData($routerData);
-
-        return file_put_contents($routerFile, $routerFileContents) !== false;
+        return $this->generateRouterFileForControllerFiles($controllersToProcess, $routerFile);
     }
 
 
