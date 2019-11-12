@@ -12,19 +12,38 @@ use ReflectionMethod;
 class SilexAnnotationsRouterGenerator
 {
     /**
-     * Generates a router file (indicated by $routerFile) for $controllerFiles
+     * Generates a router file (indicated by $routerFile) for $controllers
      *
-     * @param array $controllerFiles
-     * Numerical indexed array. Indicateds which controller files (specified by name) to generate a router file for
+     * @param array $controllers
+     * Numerical indexed array.
+     * Indicates which controller to generate a router file for.
+     * NOTE: each entry can either be an actual file name to a controller, or a directory of controllers
      *
      * @param string $routerFile
      * Indicates which file to write router file contents to
      *
      * @return bool $isRouterFileCreated
      */
-    public function generateRouterFileForControllerFiles(array $controllerFiles, $routerFile) : bool
+    public function generateRouterFileForControllers(array $controllers, $routerFile) : bool
     {
-        $routerData = $this->_parseRouterDataFromControllers($controllerFiles);
+        $controllersToProcess = [];
+
+        // for each controller in $controllers, determine if controller class -or- controller directory
+        // if controller directory, retrieve controller classes
+        foreach ($controllers as $controller)
+        {
+            if (is_dir($controller))
+            {
+                $controllersToProcess = array_merge(
+                    $controllersToProcess,
+                    $this->_retrieveControllerFilesFromDirectory($controller)
+                );
+            }
+            else if (is_file($controller))
+                $controllersToProcess[] = $controller;
+        }
+
+        $routerData = $this->_parseRouterDataFromControllers($controllersToProcess);
         $routerFileContents = $this->_generateRouterFileContentsFromData($routerData);
 
         return file_put_contents($routerFile, $routerFileContents) !== false;
@@ -34,36 +53,26 @@ class SilexAnnotationsRouterGenerator
     /**
      * Generates a router file (indicated by $routerFile) for $controllerFile
      *
-     * @param string $controllerFile
-     * The name of the controller file to generate a router file for
+     * @param string $controller
+     * The controller file to generate a router file for
      *
      * @param string $routerFile
      * Indicates which file to write router file contents to
      *
      * @return bool $isRouterFileCreated
      */
-    public function generateRouterFileForControllerFile($controllerFile, $routerFile) : bool
+    public function generateRouterFileForController($controller, $routerFile) : bool
     {
-        return $this->generateRouterFileForControllerFiles([$controllerFile], $routerFile);
+        return $this->generateRouterFileForControllers([$controller], $routerFile);
     }
 
 
-    /**
-     * Generates a router file (indicated by $routerFile) for a directory of controllers ($controllerDir)
-     *
-     * @param string $controllerDir
-     * The name of the directdory of controllers to generate a router file for
-     *
-     * @param string $routerFile
-     * Indicates which file to write router file contents to
-     *
-     * @return bool $isRouterFileCreated
-     */
-    public function generateRouterFileForControllerDirectory($controllerDir, $routerFile) : bool
-    {
-        $controllersToProcess = [];
 
-        $directories = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($controllerDir));
+    private function _retrieveControllerFilesFromDirectory($directory) : array
+    {
+        $controllers = [];
+
+        $directories = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory));
         foreach ($directories as $file)
         {
             if ($file->isDir())
@@ -72,10 +81,10 @@ class SilexAnnotationsRouterGenerator
             if (!LongTailVentures\StringUtils::endsWith($file->getPathname(), 'Controller.php'))
                 continue;
 
-            $controllersToProcess[] = $file->getPathname();
+            $controllers[] = $file->getPathname();
         }
 
-        return $this->generateRouterFileForControllerFiles($controllersToProcess, $routerFile);
+        return $controllers;
     }
 
 
@@ -135,7 +144,7 @@ class SilexAnnotationsRouterGenerator
 
                 foreach ($methods as $method)
                 {
-                    if ($method->isStatic() || $method->isConstructor())
+                    if ($method->isStatic() || $method->isConstructor() || $method->class !== $className)
                         continue;
 
                     $methodName = $method->getName();
