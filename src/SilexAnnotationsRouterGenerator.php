@@ -46,6 +46,21 @@ class SilexAnnotationsRouterGenerator
         $routerData = $this->_parseRouterDataFromControllers($controllersToProcess);
         $routerFileContents = $this->_generateRouterFileContentsFromData($routerData);
 
+        // if $routerFile doesn't exist, create necessary folders for $routerFile
+        if (!is_file($routerFile))
+        {
+            $folderParams = explode(DIRECTORY_SEPARATOR, $routerFile);
+
+            // remove file name
+            array_pop($folderParams);
+
+            // directory we want to create
+            $directory = implode(DIRECTORY_SEPARATOR, $folderParams);
+
+            if (!file_exists($directory))
+                mkdir($directory, 0777, true);
+        }
+
         return file_put_contents($routerFile, $routerFileContents) !== false;
     }
 
